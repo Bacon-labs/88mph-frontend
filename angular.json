@@ -129,7 +129,8 @@
           "builder": "angular-cli-ghpages:deploy",
           "options": {
             "repo": "git@github.com:ZeframLou/88mph-app.git",
-            "branch": "master"
+            "branch": "master",
+            "baseHref": "https://zeframlou.github.io/88mph-app/"
           }
         }
       }
