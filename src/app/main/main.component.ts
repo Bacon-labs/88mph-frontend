@@ -39,6 +39,8 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
   depositActionAPY: BigNumber;
   depositActionInterest: BigNumber;
 
+  withdrawActionAmount: BigNumber;
+
   constructor(@Inject(WEB3) web3, private apollo: Apollo) {
     super(web3);
 
@@ -63,6 +65,8 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
     this.depositActionLockPeriod = new BigNumber(this.MIN_DEPOSIT_PERIOD);
     this.depositActionAPY = new BigNumber(0);
     this.depositActionInterest = new BigNumber(0);
+
+    this.withdrawActionAmount = new BigNumber(0);
   }
 
   ngOnInit(): void {
@@ -95,7 +99,8 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
                 totalActiveDeposit
                 totalHistoricalDeposit
                 totalInterestEarned
-                deposits(first: 1000, where: {active: true}, orderBy: depositTimestamp, orderDirection: desc) {
+                deposits(first: 1000, where: {active: true}, orderBy: idx, orderDirection: desc) {
+                  idx
                   amount
                   maturationTimestamp
                   interestEarned
@@ -129,6 +134,7 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
         this.userTotalInterestEarned = new BigNumber(user.totalInterestEarned);
         this.userDeposits = deposits.map((rawDeposit) => {
           return {
+            idx: new BigNumber(rawDeposit.idx),
             amount: new BigNumber(rawDeposit.amount),
             maturationTimestamp: this.toDateObject(rawDeposit.maturationTimestamp),
             interestEarned: new BigNumber(rawDeposit.interestEarned),
@@ -163,11 +169,6 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
   }
 
   async openDepositActionModal() {
-    const SECOND = 1;
-    const MINUTE = 60 * SECOND;
-    const HOUR = 60 * MINUTE;
-    const DAY = 24 * HOUR;
-
     const abi = require('../../assets/abi/ERC20.json');
     const contract = new this.web3.eth.Contract(abi, this.DAI_ADDR);
     if (this.userAddress) {
@@ -216,6 +217,30 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
     this.sendTxWithToken(poolContract.methods.deposit(depositAmount, maturationTimestamp), tokenContract, this.POOL_ADDR, depositAmount, 7.5e5, this.doNothing, this.refreshDisplay, console.log);
   }
 
+  openWithdrawActionModal() {
+    // Generate list of unlocked deposits
+    const unlockedDeposits = this.userDeposits.filter((deposit) => this.now >= deposit.maturationTimestamp);
+
+    // Calculate total withdrawable amount
+    let withdrawableAmount = new BigNumber(0);
+    for (const deposit of unlockedDeposits) {
+      withdrawableAmount = withdrawableAmount.plus(deposit.amount);
+    }
+    this.withdrawActionAmount = withdrawableAmount;
+  }
+
+  withdraw() {
+    // Generate list of unlocked deposits
+    const unlockedDeposits = this.userDeposits.filter((deposit) => this.now >= deposit.maturationTimestamp);
+
+    const poolAbi = require('../../assets/abi/DInterest.json');
+    const poolContract = new this.web3.eth.Contract(poolAbi, this.POOL_ADDR);
+
+    // Convert unlocked deposits into format accepted by contract
+    const depositIDList = unlockedDeposits.map((deposit) => deposit.idx.toFixed());
+    this.sendTx(poolContract.methods.multiWithdraw(depositIDList), this.doNothing, this.refreshDisplay, console.log);
+  }
+
   onDepositActionAmountChange(newValue) {
     this.depositActionAmount = new BigNumber(newValue);
     if (this.depositActionAmount.isNaN()) {
@@ -241,6 +266,7 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
     // Update upfront interest APY
     const upfrontInterestRate = this.calcUpfrontInterestRate(this.depositActionLockPeriod.times(DAY));
     const dummyDeposit = {
+      idx: new BigNumber(0),
       amount: new BigNumber(1),
       maturationTimestamp: new Date(this.depositActionLockPeriod.times(DAY).times(1e3).plus(Date.now()).toNumber()),
       interestEarned: upfrontInterestRate,
@@ -304,6 +330,7 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
 }
 
 class Deposit {
+  idx: BigNumber;
   amount: BigNumber;
   maturationTimestamp: Date;
   interestEarned: BigNumber;

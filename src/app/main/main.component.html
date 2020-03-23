@@ -34,10 +34,12 @@
             <div class="col-5 col-lg-6">
               <input type="tel"
                 class="d-none d-lg-flex form-control form-control-flush input-text-lg font-weight-bold text-dark text-center"
-                placeholder="0" data-mask="#,##0.00" data-mask-reverse="true" min="0" [ngModel]="depositActionAmount.toNumber()" (ngModelChange)="onDepositActionAmountChange($event)">
+                placeholder="0" data-mask="#,##0.00" data-mask-reverse="true" min="0"
+                [ngModel]="depositActionAmount.toNumber()" (ngModelChange)="onDepositActionAmountChange($event)">
               <input type="tel"
                 class="d-flex d-lg-none form-control form-control-flush h1 font-weight-bold text-dark text-center"
-                placeholder="0" data-mask="#,##0.00" data-mask-reverse="true" min="0" [ngModel]="depositActionAmount.toNumber()" (ngModelChange)="onDepositActionAmountChange($event)">
+                placeholder="0" data-mask="#,##0.00" data-mask-reverse="true" min="0"
+                [ngModel]="depositActionAmount.toNumber()" (ngModelChange)="onDepositActionAmountChange($event)">
             </div>
           </div> <!-- / .row -->
           <div class="row">
@@ -57,8 +59,10 @@
                   </div>
                   <div class="input-group ml-auto w-50">
                     <input type="tel"
-                      class="form-control form-control-flush font-weight-bold text-dark h2 text-right mb-0" min="90" value="90"
-                      placeholder="90" data-mask="#,##0" data-mask-reverse="true" id="lock-period" [ngModel]="depositActionLockPeriod.toNumber()" (ngModelChange)="onDepositActionDepositPeriodChange($event)">
+                      class="form-control form-control-flush font-weight-bold text-dark h2 text-right mb-0" min="90"
+                      value="90" placeholder="90" data-mask="#,##0" data-mask-reverse="true" id="lock-period"
+                      [ngModel]="depositActionLockPeriod.toNumber()"
+                      (ngModelChange)="onDepositActionDepositPeriodChange($event)">
                     <div class="input-group-append">
                       <span class="input-group-text border-0 text-secondary bg-transparent text-right pr-0"
                         id="lock-period">days</span>
@@ -69,10 +73,12 @@
                   <small>Fixed APY</small> <span class="h2 mb-0">{{depositActionAPY.toFormat(2)}}%</span>
                 </li>
                 <li class="list-group-item d-flex align-items-center justify-content-between px-0">
-                  <small>Upfront interest</small> <span class="display-4 mb-0 text-success">${{depositActionInterest.toFormat(2)}}</span>
+                  <small>Upfront interest</small> <span
+                    class="display-4 mb-0 text-success">${{depositActionInterest.toFormat(2)}}</span>
                 </li>
               </ul>
-              <button class="btn btn-block btn-success" type="button" name="button" (click)="deposit()">Make Deposit</button>
+              <button class="btn btn-block btn-success" type="button" name="button" (click)="deposit()">Make
+                Deposit</button>
             </div>
 
           </div>
@@ -111,12 +117,13 @@
           </div>
           <div class="row justify-content-center align-items-center">
             <div class="col">
-              <h1 class="text-center">1,000.00 DAI</h1>
+              <h1 class="text-center">{{withdrawActionAmount.toFormat(2)}} DAI</h1>
             </div>
           </div> <!-- / .row -->
           <div class="row justify-content-center">
             <div class="col-12 col-lg-6">
-              <button class="btn btn-block btn-success" type="button" name="button">Withdraw DAI</button>
+              <button class="btn btn-block btn-success" type="button" name="button"
+                (click)="withdraw()">Withdraw</button>
             </div>
           </div>
 
@@ -249,7 +256,8 @@
           <div class="btn-group btn-group-lg" role="group" aria-label="Basic example">
             <a class="btn btn btn-lg animated-background text-white border-0" data-toggle="modal"
               data-target="#modalDeposit" (click)="openDepositActionModal()">Deposit</a>
-            <a class="btn btn-dark text-white" data-toggle="modal" data-target="#modalWithdraw">Withdraw</a>
+            <a class="btn btn-dark text-white" data-toggle="modal" data-target="#modalWithdraw"
+              (click)="openWithdrawActionModal()" [ngClass]="{'disabled': !userAddress}">Withdraw</a>
           </div>
 
         </div>
