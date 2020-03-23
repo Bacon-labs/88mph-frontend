@@ -17,6 +17,7 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
   PRECISION = 1e18;
   MIN_DEPOSIT_PERIOD = 91;
   UIRMultiplier = new BigNumber(0.5);
+  FEE = new BigNumber(0.1);
 
   now: Date;
 
@@ -120,7 +121,7 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
       const pool = data.dpool;
 
       // Pool stats
-      this.oneYearInterestRate = new BigNumber(pool.oneYearInterestRate).times(100); // In percent
+      this.oneYearInterestRate = this.applyFee(new BigNumber(pool.oneYearInterestRate).times(100)); // In percent
       this.totalActiveDeposit = new BigNumber(pool.totalActiveDeposit);
       this.totalInterestPaid = new BigNumber(pool.totalInterestPaid);
       this.totalValue = this.totalActiveDeposit.plus(pool.deficit);
@@ -323,9 +324,20 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
   calcUpfrontInterestRate(depositPeriodInSeconds: BigNumber): BigNumber {
     const YEAR = 31556952; // One year in seconds
     const ONE = new BigNumber(1);
-    const oneYearInterestRate = this.oneYearInterestRate.div(100);
+    const oneYearInterestRate = this.unapplyFee(this.oneYearInterestRate.div(100));
     const moneyMarketInterestRatePerSecond = oneYearInterestRate.div(this.UIRMultiplier.times(ONE.minus(oneYearInterestRate))).div(YEAR);
-    return ONE.minus(ONE.div(ONE.plus(this.UIRMultiplier.times(moneyMarketInterestRatePerSecond).times(depositPeriodInSeconds))));
+    const rawUpfrontInterestRate = ONE.minus(ONE.div(ONE.plus(this.UIRMultiplier.times(moneyMarketInterestRatePerSecond).times(depositPeriodInSeconds))));
+    return this.applyFee(rawUpfrontInterestRate);
+  }
+
+  applyFee(amount) {
+    const ONE = new BigNumber(1);
+    return ONE.minus(this.FEE).times(amount);
+  }
+
+  unapplyFee(amount) {
+    const ONE = new BigNumber(1);
+    return new BigNumber(amount).div(ONE.minus(this.FEE));
   }
 }
 
