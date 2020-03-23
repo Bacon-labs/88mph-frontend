@@ -95,7 +95,7 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
                 totalActiveDeposit
                 totalHistoricalDeposit
                 totalInterestEarned
-                deposits(first: 1000, where: {active: true}) {
+                deposits(first: 1000, where: {active: true}, orderBy: depositTimestamp, orderDirection: desc) {
                   amount
                   maturationTimestamp
                   interestEarned
@@ -186,9 +186,21 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
   deposit() {
     if (!this.userAddress) {
       // User not logged in, connect wallet
-      this.connectWallet(false);
+      this.connect(() => {
+        // Connected
+        this.userAddress = this.state.address;
+        this.refreshDisplay();
+        // Make deposit
+        this._deposit();
+      }, () => {
+        // Not connected
+      }, false);
       return;
     }
+    this._deposit();
+  }
+
+  _deposit() {
     const SECOND = 1;
     const MINUTE = 60 * SECOND;
     const HOUR = 60 * MINUTE;
