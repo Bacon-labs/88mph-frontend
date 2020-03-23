@@ -209,7 +209,7 @@ export class Web3Enabled {
   };
 
   async sendTxWithToken(func, token, to, amount, gasLimit, _onTxHash, _onReceipt, _onError) {
-    const maxAllowance = new BigNumber(2).pow(256).minus(1);
+    const maxAllowance = new BigNumber(2).pow(256).minus(1).integerValue().toFixed();
     let state = this.state;
     let allowance = new BigNumber(await token.methods.allowance(state.address, to).call());
     if (allowance.gt(0)) {
