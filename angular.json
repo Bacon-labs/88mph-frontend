@@ -20,13 +20,20 @@
             "tsConfig": "tsconfig.app.json",
             "aot": true,
             "assets": [
-              "src/favicon.ico",
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/styles.css",
+              "src/assets/fonts/feather/feather.min.css",
+              "src/assets/css/theme.min.css"
             ],
-            "scripts": []
+            "scripts": [
+              "src/assets/libs/jquery/dist/jquery.min.js",
+              "src/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js",
+              "src/assets/libs/flatpickr/dist/flatpickr.min.js",
+              "src/assets/libs/jquery-mask-plugin/dist/jquery.mask.min.js",
+              "src/assets/js/theme.min.js"
+            ]
           },
           "configurations": {
             "production": {
