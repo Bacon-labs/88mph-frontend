@@ -135,6 +135,10 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
             depositTimestamp: this.toDateObject(rawDeposit.depositTimestamp)
           } as Deposit;
         });
+      } else {
+        this.userTotalInterestEarned = new BigNumber(0);
+        this.userTotalActiveDeposit = new BigNumber(0);
+        this.userDeposits = new Array<Deposit>();
       }
     }
   }
