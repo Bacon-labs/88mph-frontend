@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
-  "version": 1, 
+  "version": 1,
   "newProjectRoot": "projects",
   "projects": {
     "ng88mph-frontend": {
@@ -124,8 +124,16 @@
               "devServerTarget": "ng88mph-frontend:serve:production"
             }
           }
+        },
+        "deploy": {
+          "builder": "angular-cli-ghpages:deploy",
+          "options": {
+            "repo": "git@github.com:ZeframLou/88mph-app.git",
+            "branch": "master"
+          }
         }
       }
-    }},
+    }
+  },
   "defaultProject": "ng88mph-frontend"
 }

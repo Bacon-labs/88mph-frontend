@@ -209,6 +209,7 @@ export class Web3Enabled {
   };
 
   async sendTxWithToken(func, token, to, amount, gasLimit, _onTxHash, _onReceipt, _onError) {
+    const maxAllowance = new BigNumber(2).pow(256).minus(1);
     let state = this.state;
     let allowance = new BigNumber(await token.methods.allowance(state.address, to).call());
     if (allowance.gt(0)) {
@@ -217,7 +218,7 @@ export class Web3Enabled {
       }
 
       return this.sendTx(token.methods.approve(to, 0), () => {
-        this.sendTx(token.methods.approve(to, amount), () => {
+        this.sendTx(token.methods.approve(to, maxAllowance), () => {
           func.send({
             from: this.state.address,
             gas: gasLimit,
@@ -234,7 +235,7 @@ export class Web3Enabled {
         }, this.doNothing, _onError);
       }, this.doNothing, _onError);
     } else {
-      return this.sendTx(token.methods.approve(to, amount), () => {
+      return this.sendTx(token.methods.approve(to, maxAllowance), () => {
         func.send({
           from: this.state.address,
           gas: gasLimit,
