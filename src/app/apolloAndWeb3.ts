@@ -20,6 +20,10 @@ export class ApolloAndWeb3Enabled extends Web3Enabled implements OnDestroy {
   }
 
   ngOnDestroy() {
+    this.unsubQuery();
+  }
+
+  unsubQuery() {
     if (!isNullOrUndefined(this.querySubscription)) {
       this.querySubscription.unsubscribe();
     }

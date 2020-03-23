@@ -123,7 +123,8 @@
     </div>
   </div>
 
-  <div class="modal fade" id="modalDetailTx" tabindex="-1" role="dialog" aria-hidden="true">
+  <!-- Deposit details modal -->
+  <div class="modal fade" id="modalDetailTx" tabindex="-1" role="dialog" aria-hidden="true" *ngIf="selectedDeposit">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content bg-lighter">
         <div class="modal-body">
@@ -145,13 +146,12 @@
             <div class="col">
               <h4 class="text-uppercase text-center text-muted mb-0">
                 DAI
-                <span class="d-inline-block">🔒 Locked</span>
-                <span class="d-none">💸 Unlocked</span>
-                <span class="d-none"><span class="text-primary lead">&bull;</span> Withdrawn</span>
+                <span class="d-inline-block" *ngIf="selectedDeposit.maturationTimestamp > now">🔒 Locked</span>
+                <span class="d-inline-block" *ngIf="now >= selectedDeposit.maturationTimestamp">💸 Unlocked</span>
               </h4>
-              <div class="display-4 my-3 text-center">1,000.00</div>
+              <div class="display-4 my-3 text-center">{{selectedDeposit.amount.toFormat(2)}}</div>
               <h6 class="text-uppercase text-center text-muted mb-0">
-                ~$1,000.00
+                ~${{selectedDeposit.amount.toFormat(2)}}
               </h6>
             </div>
           </div>
@@ -161,11 +161,11 @@
                 <li class="list-group-item d-flex align-items-center justify-content-between px-0">
                   <div>
                     <small>Lock period</small><br>
-                    <small class="text-dark font-weight-bold">90 days</small>
+                    <small class="text-dark font-weight-bold">{{getTimeDifferenceDays(selectedDeposit.maturationTimestamp, selectedDeposit.depositTimestamp)}} days</small>
                   </div>
                   <div class="text-right">
                     <small>Time left</small><br>
-                    <small class="text-dark font-weight-bold mb-0">22d 12h 5m 34s</small>
+                    <small class="text-dark font-weight-bold mb-0">{{getTimeDifferenceString(selectedDeposit.maturationTimestamp, now)}}</small>
                   </div>
                 </li>
                 <li class="list-group-item d-flex align-items-center justify-content-between px-0">
@@ -173,7 +173,7 @@
                     <small>Deposit time</small>
                   </div>
                   <div class="text-right">
-                    <small class="text-dark font-weight-bold mb-0">12/28/2019, 5:35:44 PM</small>
+                    <small class="text-dark font-weight-bold mb-0">{{selectedDeposit.depositTimestamp.toLocaleString()}}</small>
                   </div>
                 </li>
                 <li class="list-group-item d-flex align-items-center justify-content-between px-0">
@@ -181,14 +181,14 @@
                     <small>Unlock time</small>
                   </div>
                   <div class="text-right">
-                    <small class="text-dark font-weight-bold mb-0">12/28/2019, 5:35:44 PM</small>
+                    <small class="text-dark font-weight-bold mb-0">{{selectedDeposit.maturationTimestamp.toLocaleString()}}</small>
                   </div>
                 </li>
                 <li class="list-group-item d-flex align-items-center justify-content-between px-0">
-                  <small>Fixed APY</small> <span class="text-dark mb-0">8.00%</span>
+                  <small>Fixed APY</small> <span class="text-dark mb-0">{{calcDepositAPY(selectedDeposit).toFormat(2)}}%</span>
                 </li>
                 <li class="list-group-item d-flex align-items-center justify-content-between px-0">
-                  <small>Upfront interest</small> <span class="h2 mb-0 text-success">$80.00</span>
+                  <small>Upfront interest</small> <span class="h2 mb-0 text-success">${{selectedDeposit.interestEarned.toFormat(2)}}</span>
                 </li>
               </ul>
             </div>
@@ -201,7 +201,7 @@
   </div>
 
 
-
+  <!-- Nav bar -->
   <nav class="navbar border-0 bg-black">
     <div class="container justify-content-between">
       <!-- Brand -->
@@ -213,7 +213,10 @@
         <a class="mr-5 text-white" href="#hdiw">How does it work?</a>
         <a class="text-white" href="#stats">Stats</a>
       </div>
-      <button type="button" class="btn btn-outline-white">Connect wallet</button>
+      <button type="button" class="btn btn-outline-white" (click)="connectWallet(false)">
+        <ng-container *ngIf="!userAddress">Connect wallet</ng-container>
+        <ng-container *ngIf="userAddress">{{userAddress.slice(0, 11)}}...</ng-container>
+      </button>
     </div>
   </nav>
 
@@ -272,95 +275,76 @@
               <!-- List group -->
               <div class="list-group list-group-flush my-n3">
                 <!-- IDEA: first user's session -->
-                <a class="list-group-item" href="#" data-toggle="modal" data-target="#modalDeposit">
-                  <div class="row align-items-center">
-                    <div class="col-auto">
+                <ng-container *ngIf="!(userAddress && userDeposits.length)">
+                  <a class="list-group-item" href="#" data-toggle="modal" data-target="#modalDeposit">
+                    <div class="row align-items-center">
+                      <div class="col-auto">
 
-                      <!-- Avatar -->
-                      <div class="avatar avatar-sm">
-                        <img src="assets/img/DAI_mcd.png" alt="DAI" class="avatar-img rounded">
+                        <!-- Avatar -->
+                        <div class="avatar avatar-sm">
+                          <img src="assets/img/DAI_mcd.png" alt="DAI" class="avatar-img rounded">
+                        </div>
+
                       </div>
+                      <div class="col ml-n2">
 
-                    </div>
-                    <div class="col ml-n2">
+                        <!-- Title -->
+                        <h4 class="font-weight-normal mb-1  text-dark">
+                          Deposit DAI
+                        </h4>
 
-                      <!-- Title -->
-                      <h4 class="font-weight-normal mb-1  text-dark">
-                        Deposit DAI
-                      </h4>
+                        <!-- Text -->
+                        <small class="text-muted">
+                          Earn <strong>{{oneYearInterestRate.toFormat(2)}}%</strong> upfront fixed APY 🤑
+                        </small>
 
-                      <!-- Text -->
-                      <small class="text-muted">
-                        Earn <strong>8.0%</strong> upfront fixed APY 🤑
-                      </small>
+                      </div>
+                      <div class="col-auto">
+                        <span class="fe fe-arrow-right text-dark"></span>
+                      </div>
+                    </div> <!-- / .row -->
+                  </a>
+                </ng-container>
 
-                    </div>
-                    <div class="col-auto">
-                      <span class="fe fe-arrow-right text-dark"></span>
-                    </div>
-                  </div> <!-- / .row -->
-                </a>
                 <!-- IDEA: recurring user -->
-                <a class="list-group-item" href="#" data-toggle="modal" data-target="#modalDetailTx">
-                  <div class="row align-items-center">
-                    <div class="col-auto">
+                <ng-container *ngFor="let deposit of userDeposits">
+                  <a class="list-group-item" href="#" data-toggle="modal" data-target="#modalDetailTx" (click)="openDepositDetails(deposit)">
+                    <div class="row align-items-center">
+                      <div class="col-auto">
 
-                      <!-- Avatar -->
-                      <div class="avatar avatar-sm">
-                        <img src="assets/img/DAI_mcd.png" alt="DAI" class="avatar-img rounded">
+                        <!-- Avatar -->
+                        <div class="avatar avatar-sm">
+                          <img src="assets/img/DAI_mcd.png" alt="DAI" class="avatar-img rounded">
+                        </div>
+
                       </div>
+                      <div class="col ml-n2">
 
-                    </div>
-                    <div class="col ml-n2">
+                        <!-- Title -->
+                        <h4 class="font-weight-normal mb-1  text-dark">
+                          {{deposit.amount.toFormat(2)}} DAI
+                          <ng-container *ngIf="deposit.maturationTimestamp > now; else displayUnlockedIcon">
+                            🔒
+                          </ng-container>
+                          <ng-template #displayUnlockedIcon>
+                            💸
+                          </ng-template>
+                        </h4>
 
-                      <!-- Title -->
-                      <h4 class="font-weight-normal mb-1  text-dark">
-                        1,000.00 DAI 🔒
-                      </h4>
+                        <!-- Text -->
+                        <small class="text-muted">
+                          at <strong>{{calcDepositAPY(deposit).toFormat(2)}}%</strong> fixed APY
+                        </small>
 
-                      <!-- Text -->
-                      <small class="text-muted">
-                        at <strong>8.0%</strong> fixed APY
-                      </small>
-
-                    </div>
-                    <div class="col-auto text-right">
-                      <span class="text-success d-block">80.00 DAI</span>
-                      <span class="text-muted small">$80.00</span>
-                    </div>
-                  </div> <!-- / .row -->
-                </a>
-                <a class="list-group-item" href="#" data-toggle="modal" data-target="#modalDetailTx">
-                  <div class="row align-items-center">
-                    <div class="col-auto">
-
-                      <!-- Avatar -->
-                      <div class="avatar avatar-sm">
-                        <img src="assets/img/DAI_mcd.png" alt="DAI" class="avatar-img rounded">
                       </div>
-
-                    </div>
-                    <div class="col ml-n2">
-
-                      <!-- Title -->
-                      <h4 class="font-weight-normal mb-1 text-dark">
-                        1,000.00 DAI 💸
-                      </h4>
-
-                      <!-- Text -->
-                      <small class="text-muted">
-                        at <strong>8.0%</strong> fixed APY
-                      </small>
-
-                    </div>
-                    <div class="col-auto text-right">
-                      <span class="text-success d-block">80.00 DAI</span>
-                      <span class="text-muted small">$80.00</span>
-                    </div>
-                  </div> <!-- / .row -->
-                </a>
+                      <div class="col-auto text-right">
+                        <span class="text-success d-block">{{deposit.interestEarned.toFormat(2)}} DAI</span>
+                        <span class="text-muted small">${{deposit.interestEarned.toFormat(2)}}</span>
+                      </div>
+                    </div> <!-- / .row -->
+                  </a>
+                </ng-container>
               </div>
-
             </div> <!-- / .card-body -->
           </div>
           <p class="text-center">* Rate for a one year deposit</p>
@@ -484,6 +468,7 @@
             </div>
           </div>
 
+          <!-- Stats -->
           <div class="header mt-md-5" id="stats">
             <div class="header-body">
 

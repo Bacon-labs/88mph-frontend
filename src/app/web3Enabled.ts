@@ -25,11 +25,10 @@ export class Web3Enabled {
     this.DAI_ADDR = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
   }
 
-  async connect(onConnected, onError) {
+  async connect(onConnected, onError, isStartupMode: boolean) {
     if (!this.assistInstance) {
       let genericMobileWalletConfig = {
         name: "Web3 wallet",
-        type: "injected" as ("injected" | "hardware" | "sdk"),
         mobile: true,
         desktop: true,
         preferred: true,
@@ -46,7 +45,7 @@ export class Web3Enabled {
                 : createLegacyProviderInterface(provider)
               : null
           };
-          return new Promise<{provider, interface}>((resolve, reject) => {
+          return new Promise<{ provider, interface }>((resolve, reject) => {
             resolve(result);
           });
         }
@@ -95,6 +94,8 @@ export class Web3Enabled {
             if (wallet.provider) {
               this.web3 = new Web3(wallet.provider);
             }
+            // store the selected wallet name to be retrieved next time the app loads
+            window.localStorage.setItem('selectedWallet', wallet.name);
           },
           address: this.doNothing,
           network: this.doNothing,
@@ -107,7 +108,22 @@ export class Web3Enabled {
     }
 
     // Get user to select a wallet
-    let selectedWallet = await this.assistInstance.walletSelect();
+
+    let selectedWallet;
+    if (isStartupMode) {
+      // Startup mode: connect to previously used wallet if available, else do nothing
+      // get the selectedWallet value from local storage
+      const previouslySelectedWallet = window.localStorage.getItem('selectedWallet');
+      // call wallet select with that value if it exists
+      if (previouslySelectedWallet != null) {
+        selectedWallet = await this.assistInstance.walletSelect(previouslySelectedWallet);
+      } else {
+        return;
+      }
+    } else {
+      // Non startup mode: open wallet selection screen
+      selectedWallet = await this.assistInstance.walletSelect();
+    }
     let state = this.assistInstance.getState();
     if (
       selectedWallet
