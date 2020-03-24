@@ -1,1 +1,1 @@
-ng deploy --base-href=https://88mph.app/ --cname=88mph.app --repo=git@github.com:88mphapp/app.git
+ng deploy --base-href=https://88mph.app/ --cname=88mph.app --repo=git@github.com:88mphapp/88mphapp.github.io.git
