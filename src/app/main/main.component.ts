@@ -18,6 +18,7 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
   MIN_DEPOSIT_PERIOD = 91;
   UIRMultiplier = new BigNumber(0.5);
   FEE = new BigNumber(0.1);
+  NOOP = () => { };
 
   now: Date;
 
@@ -215,7 +216,7 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
 
     const depositAmount = this.depositActionAmount.times(this.PRECISION).integerValue().toFixed();
     const maturationTimestamp = this.depositActionLockPeriod.times(DAY).plus(new BigNumber(Date.now()).div(1e3)).integerValue().toFixed();
-    this.sendTxWithToken(poolContract.methods.deposit(depositAmount, maturationTimestamp), tokenContract, this.POOL_ADDR, depositAmount, 7.5e5, this.doNothing, this.refreshDisplay, console.log);
+    this.sendTxWithToken(poolContract.methods.deposit(depositAmount, maturationTimestamp), tokenContract, this.POOL_ADDR, depositAmount, 7.5e5, this.NOOP, () => { this.refreshDisplay(); }, console.log);
   }
 
   openWithdrawActionModal() {
@@ -239,7 +240,7 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
 
     // Convert unlocked deposits into format accepted by contract
     const depositIDList = unlockedDeposits.map((deposit) => deposit.idx.toFixed());
-    this.sendTx(poolContract.methods.multiWithdraw(depositIDList), this.doNothing, this.refreshDisplay, console.log);
+    this.sendTx(poolContract.methods.multiWithdraw(depositIDList), this.NOOP, () => { this.refreshDisplay(); }, console.log);
   }
 
   onDepositActionAmountChange(newValue) {
