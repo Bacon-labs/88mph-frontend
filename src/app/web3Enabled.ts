@@ -21,7 +21,7 @@ export class Web3Enabled {
     this.infuraKey = "9e5f0d08ad19483193cc86092b7512f2";
     this.portisAPIKey = "a838dbd2-c0b1-4465-8dbe-36b88f3d0d4e";
     this.squarelinkKey = "564b947e352529c618f0";
-    this.fortmaticKey = "pk_live_CD15F1B346962B21";
+    this.fortmaticKey = "pk_live_937F9430B2CB3407";
     this.DAI_ADDR = "0x6B175474E89094C44Da98b954EedeAC495271d0F";
   }
 
