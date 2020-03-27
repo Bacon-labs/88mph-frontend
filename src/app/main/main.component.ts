@@ -13,6 +13,7 @@ import BigNumber from 'bignumber.js';
   styleUrls: ['./main.component.css']
 })
 export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
+  DECIMALS = 4;
   POOL_ADDR = "0x9b226970cdeada0026aed50d02e4a0dd37c92b6f";
   PRECISION = 1e18;
   MIN_DEPOSIT_PERIOD = 91;
