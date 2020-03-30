@@ -227,11 +227,12 @@
       </a>
       <div class="d-none d-lg-flex">
         <a class="mr-5 text-white" href="#hdiw">How does it work?</a>
-        <a class="text-white" href="#stats">Stats</a>
+        <a class="mr-5 text-white" href="#stats">Stats</a>
+        <a class="text-white" href="https://88mph.app/docs">Documentation</a>
       </div>
       <button type="button" class="btn btn-outline-white" (click)="connectWallet(false)">
         <ng-container *ngIf="!userAddress">Connect wallet</ng-container>
-        <ng-container *ngIf="userAddress">{{userAddress.slice(0, 11)}}...</ng-container>
+        <ng-container *ngIf="userAddress">{{userAddress.slice(0, 10)}}...</ng-container>
       </button>
     </div>
   </nav>
