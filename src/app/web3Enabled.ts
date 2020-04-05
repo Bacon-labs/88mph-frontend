@@ -132,17 +132,14 @@ export class Web3Enabled {
     ) {
       // Get users' wallet ready to transact
       let ready = await this.assistInstance.walletCheck();
+      this.state = this.assistInstance.getState();
 
       if (!ready) {
         // Selected an option but then dismissed it
         // Treat as no wallet
-        // Update state
-        this.state = this.assistInstance.getState();
         onError();
       } else {
         // Successfully connected
-        // Update state
-        this.state = this.assistInstance.getState();
         onConnected();
       }
     } else {
