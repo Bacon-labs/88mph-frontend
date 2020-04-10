@@ -77,6 +77,9 @@
                     class="display-4 mb-0 text-success">${{depositActionInterest.toFormat(DECIMALS)}}</span>
                 </li>
               </ul>
+              <h6 class="text-uppercase text-center text-muted my-3">
+                Note: you may need to send multiple transactions
+              </h6>
               <button class="btn btn-block btn-success" type="button" name="button" (click)="deposit()">Make
                 Deposit</button>
             </div>
@@ -117,16 +120,20 @@
           </div>
           <div class="row justify-content-center align-items-center">
             <div class="col">
-              <h1 class="text-center">{{withdrawActionAmount.toFormat(DECIMALS)}} DAI</h1>
+              <h1 class="text-center">{{withdrawActionAmount.toFormat(18)}} DAI</h1>
             </div>
           </div> <!-- / .row -->
-          <div class="row justify-content-center">
-            <div class="col-12 col-lg-6">
-              <button class="btn btn-block btn-success" type="button" name="button"
-                (click)="withdraw()">Withdraw</button>
+          <ng-container *ngIf="withdrawActionAmount.gt(0)">
+            <div class="row justify-content-center">
+              <div class="col-12 col-lg-6">
+                <h6 class="text-uppercase text-center text-muted my-3">
+                  Note: you may need to send multiple transactions
+                </h6>
+                <button class="btn btn-block btn-success" type="button" name="button"
+                  (click)="withdraw()">Withdraw</button>
+              </div>
             </div>
-          </div>
-
+          </ng-container>
         </div>
       </div>
     </div>
@@ -199,6 +206,14 @@
                   </div>
                 </li>
                 <li class="list-group-item d-flex align-items-center justify-content-between px-0">
+                  <div>
+                    <small>Pool</small>
+                  </div>
+                  <div class="text-right">
+                    <small class="text-dark font-weight-bold mb-0">{{getDepositPoolName(selectedDeposit)}}</small>
+                  </div>
+                </li>
+                <li class="list-group-item d-flex align-items-center justify-content-between px-0">
                   <small>Fixed APY</small> <span
                     class="text-dark mb-0">{{calcDepositAPY(selectedDeposit).toFormat(DECIMALS)}}%</span>
                 </li>
@@ -210,7 +225,79 @@
             </div>
 
           </div>
+          <ng-container *ngIf="selectedDeposit.canEarlyWithdraw">
+            <div class="row justify-content-center">
+              <div class="col-12 col-lg-6">
+                <button class="btn btn-block btn-outline-secondary" type="button" name="button" data-toggle="modal"
+                  data-target="#modalEarlyWithdraw" (click)="openEarlyWithdrawModal()">Withdraw Early</button>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
 
+  <!-- Early withdraw modal -->
+  <div class="modal fade" id="modalEarlyWithdraw" tabindex="-1" role="dialog" aria-hidden="true" *ngIf="selectedDeposit">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content bg-dark">
+        <div class="modal-body">
+
+          <!-- Header -->
+          <div class="row">
+            <div class="col-auto ml-auto">
+
+              <!-- Close -->
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">
+                  &times;
+                </span>
+              </button>
+
+            </div>
+          </div> <!-- / .row -->
+
+          <div class="row">
+            <div class="col">
+              <h4 class="text-uppercase text-center text-muted">
+                Withdraw now
+              </h4>
+            </div>
+          </div>
+          <div class="row justify-content-center align-items-center">
+            <div class="col">
+              <h1 class="text-center text-light">{{selectedDeposit.amount.toFormat(18)}} DAI</h1>
+            </div>
+          </div> <!-- / .row -->
+          <div class="row">
+            <div class="col">
+              <h4 class="text-uppercase text-center text-muted">
+                By paying a penalty of
+              </h4>
+            </div>
+          </div>
+          <div class="row justify-content-center align-items-center">
+            <div class="col">
+              <h1 class="text-center text-light">{{unapplyFee(selectedDeposit.interestEarned).toFormat(18)}} DAI</h1>
+            </div>
+          </div> <!-- / .row -->
+          <div class="row">
+            <div class="col">
+              <h6 class="text-uppercase text-center text-muted my-3">
+                Your balance: {{earlyWithdrawActionUserBalance.toFormat(18)}} DAI
+              </h6>
+            </div>
+          </div>
+          <div class="row justify-content-center">
+            <div class="col-12 col-lg-6">
+              <h6 class="text-uppercase text-center text-muted my-3">
+                Note: you may need to send multiple transactions
+              </h6>
+              <button class="btn btn-block btn-success" type="button" name="button"
+                (click)="earlyWithdraw()">Withdraw Now</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

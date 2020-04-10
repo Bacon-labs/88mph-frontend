@@ -14,7 +14,23 @@ import BigNumber from 'bignumber.js';
 })
 export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
   DECIMALS = 4;
-  POOL_ADDR = "0x9b226970cdeada0026aed50d02e4a0dd37c92b6f";
+  POOLS = {
+    compoundV1:
+    {
+      name: "Compound V1",
+      address: "0x9b226970cdeada0026aed50d02e4a0dd37c92b6f"
+    },
+    compoundV2:
+    {
+      name: "Compound",
+      address: "0xebce73ed303eb97fa8060f276083444b9bbe63c1"
+    },
+    aaveV2:
+    {
+      name: "Aave",
+      address: "0xdf907b483c7e7402555bcb1d8d3878ac3a38f07b"
+    }
+  };
   PRECISION = 1e18;
   MIN_DEPOSIT_PERIOD = 91;
   UIRMultiplier = new BigNumber(0.5);
@@ -28,6 +44,7 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
   totalInterestPaid: BigNumber;
   totalValue: BigNumber;
   numActiveUsers: BigNumber;
+  bestPool: string;
 
   userAddress: string;
   userTotalInterestEarned: BigNumber;
@@ -44,6 +61,8 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
 
   withdrawActionAmount: BigNumber;
 
+  earlyWithdrawActionUserBalance: BigNumber;
+
   constructor(@Inject(WEB3) web3, private apollo: Apollo) {
     super(web3);
 
@@ -57,6 +76,7 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
     this.totalInterestPaid = new BigNumber(0);
     this.totalValue = new BigNumber(0);
     this.numActiveUsers = new BigNumber(0);
+    this.bestPool = this.POOLS.compoundV2.address;
 
     this.userAddress = null;
     this.userTotalInterestEarned = new BigNumber(0);
@@ -70,6 +90,8 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
     this.depositActionInterest = new BigNumber(0);
 
     this.withdrawActionAmount = new BigNumber(0);
+
+    this.earlyWithdrawActionUserBalance = new BigNumber(0);
   }
 
   ngOnInit(): void {
@@ -84,12 +106,34 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
         fetchPolicy: this.fetchPolicy,
         query: gql`
           {
-            dpool(id: "${this.POOL_ADDR}") {
+            compoundV1: dpool(id: "${this.POOLS.compoundV1.address}") {
+              address
               totalActiveDeposit
               totalHistoricalDeposit
               totalInterestPaid
               numUsers
-              numActiveUsers
+              numDeposits
+              numActiveDeposits
+              deficit
+              oneYearInterestRate
+            }
+            compoundV2: dpool(id: "${this.POOLS.compoundV2.address}") {
+              address
+              totalActiveDeposit
+              totalHistoricalDeposit
+              totalInterestPaid
+              numUsers
+              numDeposits
+              numActiveDeposits
+              deficit
+              oneYearInterestRate
+            }
+            aaveV2: dpool(id: "${this.POOLS.aaveV2.address}") {
+              address
+              totalActiveDeposit
+              totalHistoricalDeposit
+              totalInterestPaid
+              numUsers
               numDeposits
               numActiveDeposits
               deficit
@@ -102,8 +146,11 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
                 totalActiveDeposit
                 totalHistoricalDeposit
                 totalInterestEarned
-                deposits(first: 1000, where: {active: true}, orderBy: idx, orderDirection: desc) {
+                deposits(first: 1000, where: {active: true}, orderBy: depositTimestamp, orderDirection: desc) {
                   idx
+                  pool {
+                    address
+                  }
                   amount
                   maturationTimestamp
                   interestEarned
@@ -120,14 +167,21 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
 
   handleQuery({ data, loading }) {
     if (!loading) {
-      const pool = data.dpool;
+      const compoundV1 = data.compoundV1;
+      const compoundV2 = data.compoundV2;
+      const aaveV2 = data.aaveV2;
+      const pools = [compoundV1, compoundV2, aaveV2];
 
       // Pool stats
-      this.oneYearInterestRate = this.applyFee(new BigNumber(pool.oneYearInterestRate).times(100)); // In percent
-      this.totalActiveDeposit = new BigNumber(pool.totalActiveDeposit);
-      this.totalInterestPaid = new BigNumber(pool.totalInterestPaid);
-      this.totalValue = this.totalActiveDeposit.plus(pool.deficit);
-      this.numActiveUsers = new BigNumber(pool.numActiveUsers);
+      const maxOneYearInterestRate = Math.max(...[+compoundV2.oneYearInterestRate, +aaveV2.oneYearInterestRate]);
+      this.bestPool = pools.slice(1).reduce((a, b) => +a.oneYearInterestRate > +b.oneYearInterestRate ? a : b).address;
+      this.oneYearInterestRate = this.applyFee(new BigNumber(maxOneYearInterestRate).times(100)); // In percent
+      const sumPoolProp = prop => pools.map(p => new BigNumber(p[prop])).reduce((a, b) => a.plus(b));
+      this.totalActiveDeposit = sumPoolProp('totalActiveDeposit');
+      this.totalInterestPaid = sumPoolProp('totalInterestPaid');
+      const totalDeficit = sumPoolProp('deficit');
+      this.totalValue = this.totalActiveDeposit.plus(totalDeficit);
+      this.numActiveUsers = sumPoolProp('numUsers');
 
       if (data.user) {
         const user = data.user;
@@ -138,10 +192,12 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
         this.userDeposits = deposits.map((rawDeposit) => {
           return {
             idx: new BigNumber(rawDeposit.idx),
+            pool: rawDeposit.pool.address,
             amount: new BigNumber(rawDeposit.amount),
             maturationTimestamp: this.toDateObject(rawDeposit.maturationTimestamp),
             interestEarned: new BigNumber(rawDeposit.interestEarned),
-            depositTimestamp: this.toDateObject(rawDeposit.depositTimestamp)
+            depositTimestamp: this.toDateObject(rawDeposit.depositTimestamp),
+            canEarlyWithdraw: rawDeposit.pool.address !== this.POOLS.compoundV1.address
           } as Deposit;
         });
       } else {
@@ -211,13 +267,13 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
     const DAY = 24 * HOUR;
 
     const poolAbi = require('../../assets/abi/DInterest.json');
-    const poolContract = new this.web3.eth.Contract(poolAbi, this.POOL_ADDR);
+    const poolContract = new this.web3.eth.Contract(poolAbi, this.bestPool);
     const tokenAbi = require('../../assets/abi/ERC20.json');
     const tokenContract = new this.web3.eth.Contract(tokenAbi, this.DAI_ADDR);
 
     const depositAmount = this.depositActionAmount.times(this.PRECISION).integerValue().toFixed();
     const maturationTimestamp = this.depositActionLockPeriod.times(DAY).plus(new BigNumber(Date.now()).div(1e3)).integerValue().toFixed();
-    this.sendTxWithToken(poolContract.methods.deposit(depositAmount, maturationTimestamp), tokenContract, this.POOL_ADDR, depositAmount, 7.5e5, this.NOOP, () => { this.refreshDisplay(); }, console.log);
+    this.sendTxWithToken(poolContract.methods.deposit(depositAmount, maturationTimestamp), tokenContract, this.bestPool, depositAmount, 1e6, this.NOOP, () => { this.refreshDisplay(); }, console.log);
   }
 
   openWithdrawActionModal() {
@@ -235,13 +291,37 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
   withdraw() {
     // Generate list of unlocked deposits
     const unlockedDeposits = this.userDeposits.filter((deposit) => this.now >= deposit.maturationTimestamp);
-
+    const unlockedDepositsByPool = {};
+    for (const d of unlockedDeposits) {
+      if (!unlockedDepositsByPool[d.pool]) unlockedDepositsByPool[d.pool] = [];
+      unlockedDepositsByPool[d.pool].push(d);
+    }
+    const unlockedPools = Object.keys(unlockedDepositsByPool);
     const poolAbi = require('../../assets/abi/DInterest.json');
-    const poolContract = new this.web3.eth.Contract(poolAbi, this.POOL_ADDR);
 
-    // Convert unlocked deposits into format accepted by contract
-    const depositIDList = unlockedDeposits.map((deposit) => deposit.idx.toFixed());
-    this.sendTx(poolContract.methods.multiWithdraw(depositIDList), this.NOOP, () => { this.refreshDisplay(); }, console.log);
+    for (const pool of unlockedPools) {
+      const poolContract = new this.web3.eth.Contract(poolAbi, pool);
+
+      // Convert unlocked deposits into format accepted by contract
+      const depositIDList = unlockedDepositsByPool[pool].map((deposit) => deposit.idx.toFixed());
+      this.sendTx(poolContract.methods.multiWithdraw(depositIDList), this.NOOP, () => { this.refreshDisplay(); }, console.log);
+    }
+  }
+
+  async openEarlyWithdrawModal() {
+    const abi = require('../../assets/abi/ERC20.json');
+    const contract = new this.web3.eth.Contract(abi, this.DAI_ADDR);
+    this.earlyWithdrawActionUserBalance = new BigNumber(await contract.methods.balanceOf(this.userAddress).call()).div(this.PRECISION);
+  }
+
+  async earlyWithdraw() {
+    const poolAbi = require('../../assets/abi/DInterest.json');
+    const poolContract = new this.web3.eth.Contract(poolAbi, this.selectedDeposit.pool);
+    const tokenAbi = require('../../assets/abi/ERC20.json');
+    const tokenContract = new this.web3.eth.Contract(tokenAbi, this.DAI_ADDR);
+
+    const penaltyAmount = (await poolContract.methods.userDeposits(this.userAddress, this.selectedDeposit.idx).call()).initialDeficit;
+    this.sendTxWithToken(poolContract.methods.earlyWithdraw(this.selectedDeposit.idx), tokenContract, this.selectedDeposit.pool, penaltyAmount, 1e6, this.NOOP, () => { this.refreshDisplay(); }, console.log);
   }
 
   onDepositActionAmountChange(newValue) {
@@ -270,10 +350,12 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
     const upfrontInterestRate = this.calcUpfrontInterestRate(this.depositActionLockPeriod.times(DAY));
     const dummyDeposit = {
       idx: new BigNumber(0),
+      pool: '',
       amount: new BigNumber(1),
       maturationTimestamp: new Date(this.depositActionLockPeriod.times(DAY).times(1e3).plus(Date.now()).toNumber()),
       interestEarned: upfrontInterestRate,
-      depositTimestamp: this.now
+      depositTimestamp: this.now,
+      canEarlyWithdraw: true
     } as Deposit
     this.depositActionAPY = this.calcDepositAPY(dummyDeposit);
 
@@ -316,6 +398,17 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
     return diffDay;
   }
 
+  getDepositPoolName(deposit: Deposit): string {
+    const poolAddr = deposit.pool;
+    for (const poolID of Object.keys(this.POOLS)) {
+      const pool = this.POOLS[poolID];
+      if (poolAddr === pool.address) {
+        return pool.name;
+      }
+    }
+    return 'Unknown';
+  }
+
   calcDepositAPY(deposit: Deposit): BigNumber {
     const YEAR = 31556952; // One year in seconds
     const depositLengthInSeconds = new BigNumber(deposit.maturationTimestamp.getTime() - deposit.depositTimestamp.getTime()).div(1e3);
@@ -345,8 +438,10 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
 
 class Deposit {
   idx: BigNumber;
+  pool: string;
   amount: BigNumber;
   maturationTimestamp: Date;
   interestEarned: BigNumber;
   depositTimestamp: Date;
+  canEarlyWithdraw: boolean;
 }
