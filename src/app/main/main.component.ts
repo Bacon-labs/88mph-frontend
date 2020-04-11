@@ -106,6 +106,9 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
         fetchPolicy: this.fetchPolicy,
         query: gql`
           {
+            dpoolList(id: "0") {
+              numActiveUsers
+            }
             compoundV1: dpool(id: "${this.POOLS.compoundV1.address}") {
               address
               totalActiveDeposit
@@ -167,6 +170,7 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
 
   handleQuery({ data, loading }) {
     if (!loading) {
+      const poolList = data.dpoolList;
       const compoundV1 = data.compoundV1;
       const compoundV2 = data.compoundV2;
       const aaveV2 = data.aaveV2;
@@ -181,7 +185,7 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
       this.totalInterestPaid = sumPoolProp('totalInterestPaid');
       const totalDeficit = sumPoolProp('deficit');
       this.totalValue = this.totalActiveDeposit.plus(totalDeficit);
-      this.numActiveUsers = sumPoolProp('numUsers');
+      this.numActiveUsers = new BigNumber(poolList.numActiveUsers);
 
       if (data.user) {
         const user = data.user;
