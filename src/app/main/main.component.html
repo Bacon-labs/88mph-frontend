@@ -302,7 +302,7 @@
 
   <!-- MAIN CONTENT
     ================================================== -->
-  <div class="bg-ellipses bg-88-curved">
+  <div class="bg-cover" style="background-image: url(assets/img/illustrations/synthwave-88.jpg);">
     <!-- Nav bar -->
     <nav class="navbar border-0">
       <div class="container justify-content-between">
@@ -311,13 +311,13 @@
           <img class="mb-1 d-none d-lg-inline-block" src="assets/img/logo.png" alt="88mph" height="64">
           <img class="mb-1 d-flex d-lg-none" src="assets/img/logo.png" alt="88mph" height="48">
         </a>
-        <div class="d-none d-lg-flex">
-          <a class="text-white" href="https://88mph.app/docs">Documentation</a>
+        <div>
+          <a href="https://88mph.app/docs" class="text-white mr-4 d-none d-lg-inline-block">Docs</a>
+          <button type="button" class="btn btn-outline-white" (click)="connectWallet(false)">
+            <ng-container *ngIf="!userAddress">Connect wallet</ng-container>
+            <ng-container *ngIf="userAddress">{{userAddress.slice(0, 10)}}...</ng-container>
+          </button>
         </div>
-        <button type="button" class="btn btn-outline-white" (click)="connectWallet(false)">
-          <ng-container *ngIf="!userAddress">Connect wallet</ng-container>
-          <ng-container *ngIf="userAddress">{{userAddress.slice(0, 10)}}...</ng-container>
-        </button>
       </div>
     </nav>
     <div class="main-content pt-4 pb-7">
@@ -329,8 +329,7 @@
             <span class="h5 mb-0 header-pretitle text-white d-block">
               Earn
             </span>
-            <span
-              class="display-2 text-white d-block animated-under-text">{{oneYearInterestRate.toFormat(DECIMALS)}}%</span>
+            <span class="display-2 text-dark d-block">{{oneYearInterestRate.toFormat(DECIMALS)}}<span class="h4">%</span></span>
             <span class="h5 header-pretitle text-white d-block mb-5">
               Upfront Fixed APY*
             </span>
@@ -446,7 +445,7 @@
               </div>
             </div> <!-- / .card-body -->
           </div>
-          <p class="text-center">* Rate for a one year deposit</p>
+          <p class="text-center">* Rate for a one year deposit. This project is in beta. Use at your own risk 💀.</p>
         </div>
       </div>
       <div class="row justify-content-center">
