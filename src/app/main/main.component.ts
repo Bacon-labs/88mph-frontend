@@ -324,8 +324,8 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
     const tokenAbi = require('../../assets/abi/ERC20.json');
     const tokenContract = new this.web3.eth.Contract(tokenAbi, this.DAI_ADDR);
 
-    const penaltyAmount = (await poolContract.methods.userDeposits(this.userAddress, this.selectedDeposit.idx).call()).initialDeficit;
-    this.sendTxWithToken(poolContract.methods.earlyWithdraw(this.selectedDeposit.idx), tokenContract, this.selectedDeposit.pool, penaltyAmount, 1e6, this.NOOP, () => { this.refreshDisplay(); }, console.log);
+    const penaltyAmount = (await poolContract.methods.userDeposits(this.userAddress, this.selectedDeposit.idx.toFixed()).call()).initialDeficit;
+    this.sendTxWithToken(poolContract.methods.earlyWithdraw(this.selectedDeposit.idx.toFixed()), tokenContract, this.selectedDeposit.pool, penaltyAmount, 1e6, this.NOOP, () => { this.refreshDisplay(); }, console.log);
   }
 
   onDepositActionAmountChange(newValue) {
