@@ -206,14 +206,6 @@
                   </div>
                 </li>
                 <li class="list-group-item d-flex align-items-center justify-content-between px-0">
-                  <div>
-                    <small>Pool</small>
-                  </div>
-                  <div class="text-right">
-                    <small class="text-dark font-weight-bold mb-0">{{getDepositPoolName(selectedDeposit)}}</small>
-                  </div>
-                </li>
-                <li class="list-group-item d-flex align-items-center justify-content-between px-0">
                   <small>Fixed APY</small> <span
                     class="text-dark mb-0">{{calcDepositAPY(selectedDeposit).toFormat(DECIMALS)}}%</span>
                 </li>
@@ -239,7 +231,8 @@
   </div>
 
   <!-- Early withdraw modal -->
-  <div class="modal fade" id="modalEarlyWithdraw" tabindex="-1" role="dialog" aria-hidden="true" *ngIf="selectedDeposit">
+  <div class="modal fade" id="modalEarlyWithdraw" tabindex="-1" role="dialog" aria-hidden="true"
+    *ngIf="selectedDeposit">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content bg-dark">
         <div class="modal-body">
@@ -294,8 +287,8 @@
               <h6 class="text-uppercase text-center text-muted my-3">
                 Note: you may need to send multiple transactions
               </h6>
-              <button class="btn btn-block btn-success" type="button" name="button"
-                (click)="earlyWithdraw()">Withdraw Now</button>
+              <button class="btn btn-block btn-success" type="button" name="button" (click)="earlyWithdraw()">Withdraw
+                Now</button>
             </div>
           </div>
         </div>
@@ -304,54 +297,55 @@
   </div>
 
 
-  <!-- Nav bar -->
-  <nav class="navbar border-0 bg-black">
-    <div class="container justify-content-between">
-      <!-- Brand -->
-      <a class="align-items-center" href="./index.html">
-        <img class="mb-1 d-none d-lg-inline-block" src="assets/img/logo.png" alt="88mph" height="64">
-        <img class="mb-1 d-flex d-lg-none" src="assets/img/logo.png" alt="88mph" height="48">
-      </a>
-      <div class="d-none d-lg-flex">
-        <a class="mr-5 text-white" href="#hdiw">How does it work?</a>
-        <a class="mr-5 text-white" href="#stats">Stats</a>
-        <a class="text-white" href="https://88mph.app/docs">Documentation</a>
-      </div>
-      <button type="button" class="btn btn-outline-white" (click)="connectWallet(false)">
-        <ng-container *ngIf="!userAddress">Connect wallet</ng-container>
-        <ng-container *ngIf="userAddress">{{userAddress.slice(0, 10)}}...</ng-container>
-      </button>
-    </div>
-  </nav>
+
 
 
   <!-- MAIN CONTENT
     ================================================== -->
-  <div class="main-content pt-4 pb-7 bg-black">
+  <div class="bg-ellipses bg-88-curved">
+    <!-- Nav bar -->
+    <nav class="navbar border-0">
+      <div class="container justify-content-between">
+        <!-- Brand -->
+        <a class="align-items-center" href="./index.html">
+          <img class="mb-1 d-none d-lg-inline-block" src="assets/img/logo.png" alt="88mph" height="64">
+          <img class="mb-1 d-flex d-lg-none" src="assets/img/logo.png" alt="88mph" height="48">
+        </a>
+        <div class="d-none d-lg-flex">
+          <a class="text-white" href="https://88mph.app/docs">Documentation</a>
+        </div>
+        <button type="button" class="btn btn-outline-white" (click)="connectWallet(false)">
+          <ng-container *ngIf="!userAddress">Connect wallet</ng-container>
+          <ng-container *ngIf="userAddress">{{userAddress.slice(0, 10)}}...</ng-container>
+        </button>
+      </div>
+    </nav>
+    <div class="main-content pt-4 pb-7">
 
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-12 col-lg-6 text-center">
-          <!-- Pretitle -->
-          <h5 class="header-pretitle">
-            Earn <span class="text-white">{{oneYearInterestRate.toFormat(DECIMALS)}}%</span> Upfront Fixed APY*
-          </h5>
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-12 col-lg-6 text-center">
+            <!-- Pretitle -->
+            <span class="h5 mb-0 header-pretitle text-white d-block">
+              Earn
+            </span>
+            <span
+              class="display-2 text-white d-block animated-under-text">{{oneYearInterestRate.toFormat(DECIMALS)}}%</span>
+            <span class="h5 header-pretitle text-white d-block mb-5">
+              Upfront Fixed APY*
+            </span>
 
-          <!-- Title -->
-          <h1 class="header-title display-4 text-white mb-4">
-            ${{userTotalInterestEarned.toFormat(DECIMALS)}}
-          </h1>
-          <a class="btn btn-lg animated-background text-white" data-toggle="modal" data-target="#modalDeposit"
-            (click)="openDepositActionModal()">Deposit</a>
-          <a class="btn btn-lg btn-dark text-white ml-3" data-toggle="modal" data-target="#modalWithdraw"
-            (click)="openWithdrawActionModal()" [ngClass]="{'disabled': !userAddress}">Withdraw</a>
-
+            <a class="btn btn-lg animated-background text-white" data-toggle="modal" data-target="#modalDeposit"
+              (click)="openDepositActionModal()">Deposit</a>
+            <a class="btn btn-lg btn-dark text-white ml-3" data-toggle="modal" data-target="#modalWithdraw"
+              (click)="openWithdrawActionModal()" [ngClass]="{'disabled': !userAddress}">Withdraw</a>
+          </div>
         </div>
       </div>
-    </div>
 
 
-  </div><!-- / .main-content -->
+    </div><!-- / .main-content -->
+  </div>
 
   <div class="main-content">
     <div class="container">
@@ -456,164 +450,83 @@
         </div>
       </div>
       <div class="row justify-content-center">
-        <div class="col-12 px-5 px-lg-3 col-lg-6">
-          <div class="header mt-md-5" id="hdiw">
-            <div class="header-body">
-
-              <!-- Pretitle -->
-              <h1 class="header-pretitle h6">
-                Getting started
-              </h1>
-
-              <!-- Title -->
-              <h2 class="header-title display-4">
-                How does 88mph work?
-              </h2>
-
-            </div>
-          </div>
-          <p class="text-danger">💀 This project is in beta. Use at your own risk.</p>
-          <div class="header mt-md-5">
-            <div class="header-body">
-
-              <!-- Title -->
-              <h3 class="header-title h1">
-                1. Deposit
-              </h3>
-
-            </div>
-          </div>
-          <p>Connect your <a class="text-decoration-underline text-dark" href="https://ethereum.org/wallets/"
-              target="_blank">Ethereum wallet</a> to 88mph and deposit your <a
-              class="text-decoration-underline text-dark" href="https://makerdao.com/en/dai/" target="_blank">DAI</a>
-            into the pool. Your deposit is locked in 88mph's pool for a minimum
-            of 91 days. A longer lock period means a larger amount of upfront fixed-rate interest.</p>
-          <div class="header mt-md-5">
-            <div class="header-body">
-
-              <!-- Title -->
-              <h3 class="header-title h1">
-                2. Earn <strong class="interest-rate">{{oneYearInterestRate.toFormat(DECIMALS)}}%</strong> upfront
-                fixed-rate
-                interest
-              </h3>
-
-            </div>
-          </div>
-          <p>Here's the cool part: You get the interest upfront! It's like your interest is travelling back
-            from the future! While you get your fixed-rate APY instantly, your deposit will generate interests
-            during the lock period for the 88mph's pool at a variable APY on <a
-              class="text-decoration-underline text-dark" href="https://compound.finance/" target="_blank">Compound</a>
-            protocol, insuring the stability of 88mph's pool.</p>
-          <img class="img-fluid" src="https://media.giphy.com/media/xsF1FSDbjguis/giphy.gif" alt="Back to the future ">
-          <div class="header mt-md-5">
-            <div class="header-body">
-
-              <!-- Title -->
-              <h3 class="header-title h1">
-                3. Withdraw
-              </h3>
-
-            </div>
-          </div>
-          <p>When the lock period is over, withdraw your initial deposit. If you deposited 100.0000 DAI, yeah,
-            you get back 100.0000 DAI.</p>
-          <div class="header mt-md-5">
-            <div class="header-body">
-
-              <!-- Title -->
-              <h3 class="header-title h1">
-                88mph fee disclosure
-              </h3>
-
-            </div>
-          </div>
-          <p>
-            88mph charges a 10% fee on your upfront interest. The fee is already factored into the displayed APY
-            ({{oneYearInterestRate.toFormat(DECIMALS)}}%), so don't worry about doing more math 😉</p>
-          <div class="header mt-md-5">
-            <div class="header-body">
-
-              <!-- Title -->
-              <h3 class="header-title h1">
-                88mph risk disclosure
-              </h3>
-
-            </div>
-          </div>
-          <p>
-            If the interest rate offered by 88mph's underlying money market (e.g. Compound) drops too low,
-            and many users try to withdraw at the same time, then 88mph could be temporarily insolvent,
-            forcing users to wait a bit more to be able to withdraw their full deposit.
-          </p>
-          <p>
-            Even though this risk is
-            present, 88mph is planning to mitigate
-            it with sponsored deposits that help maintain the pool's solvency while offering
-            visibility to 88mph's sponsors.
-          </p>
-          <div class="header mt-md-5">
-            <div class="header-body">
-
-              <!-- Title -->
-              <h3 class="header-title h1">
-                Sponsored deposits
-              </h3>
-
-            </div>
-          </div>
-          <p>
-            Sponsored deposits let companies or organizations support 88mph's security in exchange for their visibility
-            on 88mph.
-            Sponsored deposits are like normal deposits, except that you don't get the upfront interest and get counted
-            separately in the statistics.
-          </p>
-          <p>
-            Sponsoring 88mph won't have a direct cost, since sponsors can withdraw a deposit after its deposit period is
-            over. However, sponsors will be shouldering risk for normal users, and may lose money if a black swan event
-            occurs.
-          </p>
-          <p>
-            We're going to release ASAP an UI for sponsored deposits. If you're interested
-            in sponsoring, contact us at
-            <a href="mailto:hello@baconlabs.dev" target="_top">hello@baconlabs.dev</a> or drop us a line on <a
-              href="https://twitter.com/88mphapp" target="_blank">Twitter</a>
-          </p>
-          <div class="header mt-md-5">
-            <div class="header-body">
-              <div class="row align-items-center">
-                <div class="col">
-
-                  <!-- Title -->
-                  <h3 class="header-title h1">
-                    Need more info?
-                  </h3>
-
-                </div>
-                <div class="col-auto">
-
-                  <a class="btn btn-outline-primary ml-auto" href="https://twitter.com/88mphapp" target="_blank">Drop us
-                    a line</a>
-
+        <div class="col-11 col-md-10">
+          <h2 class="display-3 text-center">
+            How does it work?
+          </h2>
+          <p class="text-center lead text-secondary mb-5">Lock your $DAI, and earn upfront fixed APY. It's like your
+            interest is travelling back from the future! Check our <a href="https://88mph.app/docs"
+              target="_blank">Documentation</a></p>
+          <img class="d-block mx-auto img-fluid mb-4" src="assets/img/illustrations/delorean.png" alt="" width="388">
+          <div class="row mb-5">
+            <div class="col-12 col-lg-4 mb-6 mb-lg-4">
+              <!-- Card -->
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <div class="avatar avatar-xl card-avatar card-avatar-top">
+                    <span
+                      class="border border-1 avatar-title bg-white rounded-circle font-weight-bold text-secondary">1</span>
+                  </div>
+                  <h2 class="card-title">
+                    Deposit
+                  </h2>
+                  <p class="card-text text-secondary">
+                    Connect your <a href="https://ethereum.org/wallets/" target="_blank">Ethereum wallet</a> to 88mph
+                    and deposit your <a href="https://makerdao.com/en/dai/" target="_blank">DAI</a> into the pool. Your
+                    deposit is locked in 88mph's pool for a minimum of 91 days.
+                  </p>
                 </div>
               </div>
-
-
+            </div>
+            <div class="col-12 col-lg-4 mb-6 mb-lg-4">
+              <!-- Card -->
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <div class="avatar avatar-xl card-avatar card-avatar-top">
+                    <span
+                      class="border border-1 avatar-title bg-white rounded-circle font-weight-bold text-secondary">2</span>
+                  </div>
+                  <h2 class="card-title">
+                    Earn {{oneYearInterestRate.toFormat(DECIMALS)}}%* upfront fixed-rate interest
+                  </h2>
+                  <p class="card-text text-secondary">
+                    It's like your interest is travelling back from the future! While you get your fixed APY instantly,
+                    your deposit will generate interests during the lock period for the 88mph's pool at a variable APY
+                    on <a href="https://compound.finance/" target="_blank">Compound</a> and <a href="https://aave.com/"
+                      target="_blank">Aave</a> protocol, insuring the stability of 88mph's pool.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-4 mb-6 mb-lg-4">
+              <!-- Card -->
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <div class="avatar avatar-xl card-avatar card-avatar-top">
+                    <span
+                      class="border border-1 avatar-title bg-white rounded-circle font-weight-bold text-secondary">3</span>
+                  </div>
+                  <h2 class="card-title">
+                    Withdraw
+                  </h2>
+                  <p class="card-text text-secondary">
+                    Withdraw your initial deposit before maturity by paying a penalty* or when the lock period is over.
+                    If you deposited 100.00 DAI, yeah, you get back 100.00 DAI.
+                  </p>
+                  <small class="text-muted d-block mb-3">*Equal to your upfront interest + 10% fee applied on your
+                    upfront interest</small>
+                </div>
+              </div>
             </div>
           </div>
-
-          <!-- Stats -->
-          <div class="header mt-md-5" id="stats">
-            <div class="header-body">
-
-              <!-- Title -->
-              <h3 class="header-title h1">
-                Stats
-              </h3>
-
-            </div>
-          </div>
-          <div class="row">
+          <img class="d-block mx-auto img-fluid" src="assets/img/illustrations/rageface.png" alt="" width="128">
+          <p class="text-center lead animated-under-text">It’s weird at first, we know.</p>
+        </div>
+      </div>
+      <div class="row justify-content-center mb-5">
+        <div class="col-11 col-md-10">
+          <h3 class="h1 text-center mb-5">But it's real. Check our stats</h3>
+          <div class="row mb-6">
             <div class="col-12 col-lg-6">
               <div class="card">
                 <div class="card-body">
@@ -700,6 +613,43 @@
               </div>
             </div>
           </div>
+          <div class="row">
+            <div class="col-12 col-lg-6">
+              <h3 class="h1">88mph risks disclosures</h3>
+              <p>If the interest rate offered by 88mph's underlying money market (e.g. Compound) drops too low, and many
+                users try to withdraw at the same time, then 88mph could be temporarily insolvent, forcing users to wait
+                a bit more to be able to withdraw their full deposit.</p>
+              <p>Even though this risk is present, 88mph is planning to mitigate it with sponsored deposits that help
+                maintain the pool's solvency while offering visibility to 88mph's sponsors. </p>
+
+              <!-- Title -->
+              <h4>
+                Need more info?
+              </h4>
+              <a class="btn btn-outline-primary ml-auto" href="https://twitter.com/88mphapp" target="_blank">Drop us a
+                line</a>
+
+
+            </div>
+            <div class="col-12 col-lg-6">
+              <h3 class="h1">Sponsored deposits</h3>
+              <p>Sponsored deposits let companies or organizations support 88mph's security in exchange for their
+                visibility on 88mph. Sponsored deposits are like normal deposits, except that you don't get the upfront
+                interest and get counted separately in the statistics.</p>
+              <p>Sponsoring 88mph won't have a direct cost, since sponsors can withdraw a deposit after its deposit
+                period is over. However, sponsors will be shouldering risk for normal users, and may lose money if a
+                black swan event occurs.</p>
+              <p>We're going to release ASAP an UI for sponsored deposits. If you're interested in sponsoring, contact
+                us at <a _ngcontent-chm-c24="" href="mailto:hello@baconlabs.dev" target="_top">hello@baconlabs.dev</a>
+                or drop us a line on <a _ngcontent-chm-c24="" href="https://twitter.com/88mphapp"
+                  target="_blank">Twitter</a></p>
+
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-12 px-5 col-lg-6">
           <div class="text-center mb-4">
             <!-- Preheading -->
             <h6 class="text-uppercase text-muted text-center my-4">
@@ -719,9 +669,10 @@
                   me</button>
               </div>
             </form>
+
           </div>
           <div class="text-center mb-4">
-            <a class="mr-4" href="https://twitter.com/88mphapp" target="_blank">
+            <a href="https://twitter.com/88mphapp" target="_blank">
               <i class="fe fe-twitter h1"></i>
             </a>
             <a href="https://github.com/Bacon-labs" target="_blank">
@@ -729,8 +680,8 @@
             </a>
           </div>
           <div class="text-center text-secondary mb-5">
-            Made by <a class="white-link-underlined" href="https://baconlabs.dev" target="_blank">🥓 Bacon
-              Labs</a> • hello@baconlabs.dev
+            Made by <a class="white-link-underlined" href="https://baconlabs.dev" target="_blank">🥓 Bacon Labs</a> •
+            hello@baconlabs.dev
           </div>
         </div>
       </div>
