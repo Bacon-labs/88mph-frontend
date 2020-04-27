@@ -6,6 +6,7 @@ import { ApolloAndWeb3Enabled } from '../apolloAndWeb3';
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
 import BigNumber from 'bignumber.js';
+declare var $: any;
 
 @Component({
   selector: 'app-main',
@@ -63,6 +64,9 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
 
   earlyWithdrawActionUserBalance: BigNumber;
 
+  txHash: string;
+  confirmationIsDeposit: boolean;
+
   constructor(@Inject(WEB3) web3, private apollo: Apollo) {
     super(web3);
 
@@ -92,6 +96,9 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
     this.withdrawActionAmount = new BigNumber(0);
 
     this.earlyWithdrawActionUserBalance = new BigNumber(0);
+
+    this.txHash = '';
+    this.confirmationIsDeposit = false;
   }
 
   ngOnInit(): void {
@@ -277,7 +284,17 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
 
     const depositAmount = this.depositActionAmount.times(this.PRECISION).integerValue().toFixed();
     const maturationTimestamp = this.depositActionLockPeriod.times(DAY).plus(new BigNumber(Date.now()).div(1e3)).integerValue().toFixed();
-    this.sendTxWithToken(poolContract.methods.deposit(depositAmount, maturationTimestamp), tokenContract, this.bestPool, depositAmount, 1e6, this.NOOP, () => { this.refreshDisplay(); }, console.log);
+    this.sendTxWithToken(poolContract.methods.deposit(depositAmount, maturationTimestamp), tokenContract, this.bestPool, depositAmount, 1e6, (hash) => { this.openConfirmationModal(true, hash); }, () => { this.refreshDisplay(); }, console.log);
+  }
+
+  openConfirmationModal(isDeposit, hash) {
+    this.txHash = hash;
+    this.confirmationIsDeposit = isDeposit;
+    $('#modalConfirmation').modal('show');
+    $('#modalDeposit').modal('hide');
+    $('#modalWithdraw').modal('hide');
+    $('#modalDepositDetails').modal('hide');
+    $('#modalEarlyWithdraw').modal('hide');
   }
 
   openWithdrawActionModal() {
@@ -308,7 +325,7 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
 
       // Convert unlocked deposits into format accepted by contract
       const depositIDList = unlockedDepositsByPool[pool].map((deposit) => deposit.idx.toFixed());
-      this.sendTx(poolContract.methods.multiWithdraw(depositIDList), this.NOOP, () => { this.refreshDisplay(); }, console.log);
+      this.sendTx(poolContract.methods.multiWithdraw(depositIDList), (hash) => { this.openConfirmationModal(false, hash); }, () => { this.refreshDisplay(); }, console.log);
     }
   }
 
@@ -325,7 +342,7 @@ export class MainComponent extends ApolloAndWeb3Enabled implements OnInit {
     const tokenContract = new this.web3.eth.Contract(tokenAbi, this.DAI_ADDR);
 
     const penaltyAmount = (await poolContract.methods.userDeposits(this.userAddress, this.selectedDeposit.idx.toFixed()).call()).initialDeficit;
-    this.sendTxWithToken(poolContract.methods.earlyWithdraw(this.selectedDeposit.idx.toFixed()), tokenContract, this.selectedDeposit.pool, penaltyAmount, 1e6, this.NOOP, () => { this.refreshDisplay(); }, console.log);
+    this.sendTxWithToken(poolContract.methods.earlyWithdraw(this.selectedDeposit.idx.toFixed()), tokenContract, this.selectedDeposit.pool, penaltyAmount, 1e6, (hash) => { this.openConfirmationModal(false, hash); }, () => { this.refreshDisplay(); }, console.log);
   }
 
   onDepositActionAmountChange(newValue) {

@@ -140,7 +140,7 @@
   </div>
 
   <!-- Deposit details modal -->
-  <div class="modal fade" id="modalDetailTx" tabindex="-1" role="dialog" aria-hidden="true" *ngIf="selectedDeposit">
+  <div class="modal fade" id="modalDepositDetails" tabindex="-1" role="dialog" aria-hidden="true" *ngIf="selectedDeposit">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content bg-lighter">
         <div class="modal-body">
@@ -296,7 +296,58 @@
     </div>
   </div>
 
+  <!-- Tx confirmation modal -->
+  <div class="modal fade" id="modalConfirmation" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content bg-lighter">
+        <div class="modal-body">
 
+          <!-- Header -->
+          <div class="row">
+            <div class="col-auto ml-auto">
+
+              <!-- Close -->
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">
+                  &times;
+                </span>
+              </button>
+
+            </div>
+          </div> <!-- / .row -->
+
+          <div class="row justify-content-center">
+            <div class="col-12 col-lg-6 text-center">
+              <ng-container *ngIf="confirmationIsDeposit">
+                <h1 class="display-1">🤑</h1>
+                <h2>Congrats! You just hit 88mph!</h2>
+                <p class="text-center text-muted">
+                  Your upfront interest is being sent to your wallet.
+                </p>
+                <!-- Tweet button -->
+                <a class="btn btn-block animated-background mx-auto text-white"
+                  href="https://twitter.com/intent/tweet?url=https%3A%2F%2F88mph.app&via=88mphapp&text=I%20just%20deposited%20my%20%24DAI%20and%20earned%20{{oneYearInterestRate.toFormat(DECIMALS)}}%25%20upfront%20fixed%20APY%20on&hashtags=DeFi"
+                  target="_blank">Tweet about it</a>
+              </ng-container>
+
+              <ng-container *ngIf="!confirmationIsDeposit">
+                <h1 class="display-1">💸</h1>
+                <h2>Done!</h2>
+                <p class="text-center text-muted">
+                  Your deposit is being sent to your wallet.
+                </p>
+              </ng-container>
+
+              <a class="btn btn-block mx-auto" href="https://etherscan.io/tx/{{txHash}}" target="_blank">Check
+                status</a>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
 
 
 
@@ -329,7 +380,8 @@
             <span class="h5 mb-0 header-pretitle text-dark d-block">
               Earn
             </span>
-            <span class="display-2 text-white d-block">{{oneYearInterestRate.toFormat(DECIMALS)}}<span class="h4">%</span></span>
+            <span class="display-2 text-white d-block">{{oneYearInterestRate.toFormat(DECIMALS)}}<span
+                class="h4">%</span></span>
             <span class="h5 header-pretitle text-dark d-block mb-5">
               Upfront Fixed APY*
             </span>
@@ -405,7 +457,7 @@
 
                 <!-- IDEA: recurring user -->
                 <ng-container *ngFor="let deposit of userDeposits">
-                  <a class="list-group-item" href="#" data-toggle="modal" data-target="#modalDetailTx"
+                  <a class="list-group-item" href="#" data-toggle="modal" data-target="#modalDepositDetails"
                     (click)="openDepositDetails(deposit)">
                     <div class="row align-items-center">
                       <div class="col-auto">
