@@ -77,6 +77,9 @@
                     class="display-4 mb-0 text-success">${{depositActionInterest.toFormat(DECIMALS)}}</span>
                 </li>
               </ul>
+              <h6 class="text-uppercase text-center text-muted my-3">
+                Note: you may need to send multiple transactions
+              </h6>
               <button class="btn btn-block btn-success" type="button" name="button" (click)="deposit()">Make
                 Deposit</button>
             </div>
@@ -117,23 +120,27 @@
           </div>
           <div class="row justify-content-center align-items-center">
             <div class="col">
-              <h1 class="text-center">{{withdrawActionAmount.toFormat(DECIMALS)}} DAI</h1>
+              <h1 class="text-center">{{withdrawActionAmount.toFormat(18)}} DAI</h1>
             </div>
           </div> <!-- / .row -->
-          <div class="row justify-content-center">
-            <div class="col-12 col-lg-6">
-              <button class="btn btn-block btn-success" type="button" name="button"
-                (click)="withdraw()">Withdraw</button>
+          <ng-container *ngIf="withdrawActionAmount.gt(0)">
+            <div class="row justify-content-center">
+              <div class="col-12 col-lg-6">
+                <h6 class="text-uppercase text-center text-muted my-3">
+                  Note: you may need to send multiple transactions
+                </h6>
+                <button class="btn btn-block btn-success" type="button" name="button"
+                  (click)="withdraw()">Withdraw</button>
+              </div>
             </div>
-          </div>
-
+          </ng-container>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Deposit details modal -->
-  <div class="modal fade" id="modalDetailTx" tabindex="-1" role="dialog" aria-hidden="true" *ngIf="selectedDeposit">
+  <div class="modal fade" id="modalDepositDetails" tabindex="-1" role="dialog" aria-hidden="true" *ngIf="selectedDeposit">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content bg-lighter">
         <div class="modal-body">
@@ -210,6 +217,132 @@
             </div>
 
           </div>
+          <ng-container *ngIf="selectedDeposit.canEarlyWithdraw">
+            <div class="row justify-content-center">
+              <div class="col-12 col-lg-6">
+                <button class="btn btn-block btn-outline-secondary" type="button" name="button" data-toggle="modal"
+                  data-target="#modalEarlyWithdraw" (click)="openEarlyWithdrawModal()">Withdraw Early</button>
+              </div>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Early withdraw modal -->
+  <div class="modal fade" id="modalEarlyWithdraw" tabindex="-1" role="dialog" aria-hidden="true"
+    *ngIf="selectedDeposit">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content bg-dark">
+        <div class="modal-body">
+
+          <!-- Header -->
+          <div class="row">
+            <div class="col-auto ml-auto">
+
+              <!-- Close -->
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">
+                  &times;
+                </span>
+              </button>
+
+            </div>
+          </div> <!-- / .row -->
+
+          <div class="row">
+            <div class="col">
+              <h4 class="text-uppercase text-center text-muted">
+                Withdraw now
+              </h4>
+            </div>
+          </div>
+          <div class="row justify-content-center align-items-center">
+            <div class="col">
+              <h1 class="text-center text-light">{{selectedDeposit.amount.toFormat(18)}} DAI</h1>
+            </div>
+          </div> <!-- / .row -->
+          <div class="row">
+            <div class="col">
+              <h4 class="text-uppercase text-center text-muted">
+                By paying a penalty of
+              </h4>
+            </div>
+          </div>
+          <div class="row justify-content-center align-items-center">
+            <div class="col">
+              <h1 class="text-center text-light">{{unapplyFee(selectedDeposit.interestEarned).toFormat(18)}} DAI</h1>
+            </div>
+          </div> <!-- / .row -->
+          <div class="row">
+            <div class="col">
+              <h6 class="text-uppercase text-center text-muted my-3">
+                Your balance: {{earlyWithdrawActionUserBalance.toFormat(18)}} DAI
+              </h6>
+            </div>
+          </div>
+          <div class="row justify-content-center">
+            <div class="col-12 col-lg-6">
+              <h6 class="text-uppercase text-center text-muted my-3">
+                Note: you may need to send multiple transactions
+              </h6>
+              <button class="btn btn-block btn-success" type="button" name="button" (click)="earlyWithdraw()">Withdraw
+                Now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tx confirmation modal -->
+  <div class="modal fade" id="modalConfirmation" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content bg-lighter">
+        <div class="modal-body">
+
+          <!-- Header -->
+          <div class="row">
+            <div class="col-auto ml-auto">
+
+              <!-- Close -->
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">
+                  &times;
+                </span>
+              </button>
+
+            </div>
+          </div> <!-- / .row -->
+
+          <div class="row justify-content-center">
+            <div class="col-12 col-lg-6 text-center">
+              <ng-container *ngIf="confirmationIsDeposit">
+                <h1 class="display-1">🤑</h1>
+                <h2>Congrats! You just hit 88mph!</h2>
+                <p class="text-center text-muted">
+                  Your upfront interest is being sent to your wallet.
+                </p>
+                <!-- Tweet button -->
+                <a class="btn btn-block animated-background mx-auto text-white"
+                  href="https://twitter.com/intent/tweet?url=https%3A%2F%2F88mph.app&via=88mphapp&text=I%20just%20deposited%20my%20%24DAI%20and%20earned%20{{oneYearInterestRate.toFormat(DECIMALS)}}%25%20upfront%20fixed%20APY%20on&hashtags=DeFi"
+                  target="_blank">Tweet about it</a>
+              </ng-container>
+
+              <ng-container *ngIf="!confirmationIsDeposit">
+                <h1 class="display-1">💸</h1>
+                <h2>Done!</h2>
+                <p class="text-center text-muted">
+                  Your deposit is being sent to your wallet.
+                </p>
+              </ng-container>
+
+              <a class="btn btn-block mx-auto" href="https://etherscan.io/tx/{{txHash}}" target="_blank">Check
+                status</a>
+            </div>
+
+          </div>
 
         </div>
       </div>
@@ -217,58 +350,57 @@
   </div>
 
 
-  <!-- Nav bar -->
-  <nav class="navbar border-0 bg-black">
-    <div class="container justify-content-between">
-      <!-- Brand -->
-      <a class="align-items-center" href="./index.html">
-        <img class="mb-1 d-none d-lg-inline-block" src="assets/img/logo.png" alt="88mph" height="64">
-        <img class="mb-1 d-flex d-lg-none" src="assets/img/logo.png" alt="88mph" height="48">
-      </a>
-      <div class="d-none d-lg-flex">
-        <a class="mr-5 text-white" href="#hdiw">How does it work?</a>
-        <a class="mr-5 text-white" href="#stats">Stats</a>
-        <a class="text-white" href="https://88mph.app/docs">Documentation</a>
-      </div>
-      <button type="button" class="btn btn-outline-white" (click)="connectWallet(false)">
-        <ng-container *ngIf="!userAddress">Connect wallet</ng-container>
-        <ng-container *ngIf="userAddress">{{userAddress.slice(0, 10)}}...</ng-container>
-      </button>
-    </div>
-  </nav>
-
 
   <!-- MAIN CONTENT
     ================================================== -->
-  <div class="main-content pt-4 pb-7 bg-black">
-
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-12 col-lg-6 text-center">
-          <!-- Pretitle -->
-          <h5 class="header-pretitle">
-            Earn <span class="text-white">{{oneYearInterestRate.toFormat(DECIMALS)}}%</span> Upfront Fixed APY*
-          </h5>
-
-          <!-- Title -->
-          <h1 class="header-title display-4 text-white mb-4">
-            ${{userTotalInterestEarned.toFormat(DECIMALS)}}
-          </h1>
-          <a class="btn btn-lg animated-background text-white" data-toggle="modal" data-target="#modalDeposit"
-            (click)="openDepositActionModal()">Deposit</a>
-          <a class="btn btn-lg btn-dark text-white ml-3" data-toggle="modal" data-target="#modalWithdraw"
-            (click)="openWithdrawActionModal()" [ngClass]="{'disabled': !userAddress}">Withdraw</a>
-
+  <div class="bg-cover" style="background-image: url(assets/img/illustrations/synthwave-88.jpg);">
+    <!-- Nav bar -->
+    <nav class="navbar border-0">
+      <div class="container justify-content-between">
+        <!-- Brand -->
+        <a class="align-items-center" href="./index.html">
+          <img class="mb-1 d-none d-lg-inline-block" src="assets/img/logo.png" alt="88mph" height="64">
+          <img class="mb-1 d-flex d-lg-none" src="assets/img/logo.png" alt="88mph" height="48">
+        </a>
+        <div>
+          <a href="https://88mph.app/docs" class="text-white mr-4 d-none d-lg-inline-block">Docs</a>
+          <button type="button" class="btn btn-outline-white" (click)="connectWallet(false)">
+            <ng-container *ngIf="!userAddress">Connect wallet</ng-container>
+            <ng-container *ngIf="userAddress">{{userAddress.slice(0, 10)}}...</ng-container>
+          </button>
         </div>
       </div>
-    </div>
+    </nav>
+    <div class="main-content pt-4 pb-7">
+
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-12 col-lg-6 text-center">
+            <!-- Pretitle -->
+            <span class="h5 mb-0 header-pretitle text-dark d-block">
+              Earn
+            </span>
+            <span class="display-2 text-white d-block">{{oneYearInterestRate.toFormat(DECIMALS)}}<span
+                class="h4">%</span></span>
+            <span class="h5 header-pretitle text-dark d-block mb-5">
+              Upfront Fixed APY*
+            </span>
+
+            <a class="btn btn-lg animated-background text-white" data-toggle="modal" data-target="#modalDeposit"
+              (click)="openDepositActionModal()">Deposit</a>
+            <a class="btn btn-lg btn-dark text-white ml-3" data-toggle="modal" data-target="#modalWithdraw"
+              (click)="openWithdrawActionModal()" [ngClass]="{'disabled': !userAddress}">Withdraw</a>
+          </div>
+        </div>
+      </div>
 
 
-  </div><!-- / .main-content -->
+    </div><!-- / .main-content -->
+  </div>
 
   <div class="main-content">
     <div class="container">
-      <div class="row justify-content-center">
+      <div class="row justify-content-center mb-5 mb-lg-6">
         <div class="col-12 col-lg-6">
           <div class="card mt-n38">
             <div class="card-header">
@@ -325,7 +457,7 @@
 
                 <!-- IDEA: recurring user -->
                 <ng-container *ngFor="let deposit of userDeposits">
-                  <a class="list-group-item" href="#" data-toggle="modal" data-target="#modalDetailTx"
+                  <a class="list-group-item" href="#" data-toggle="modal" data-target="#modalDepositDetails"
                     (click)="openDepositDetails(deposit)">
                     <div class="row align-items-center">
                       <div class="col-auto">
@@ -365,168 +497,87 @@
               </div>
             </div> <!-- / .card-body -->
           </div>
-          <p class="text-center">* Rate for a one year deposit</p>
+          <p class="text-center">* Rate for a one year deposit. This project is in beta. Use at your own risk 💀.</p>
         </div>
       </div>
       <div class="row justify-content-center">
-        <div class="col-12 px-5 px-lg-3 col-lg-6">
-          <div class="header mt-md-5" id="hdiw">
-            <div class="header-body">
-
-              <!-- Pretitle -->
-              <h1 class="header-pretitle h6">
-                Getting started
-              </h1>
-
-              <!-- Title -->
-              <h2 class="header-title display-4">
-                How does 88mph work?
-              </h2>
-
-            </div>
-          </div>
-          <p class="text-danger">💀 This project is in beta. Use at your own risk.</p>
-          <div class="header mt-md-5">
-            <div class="header-body">
-
-              <!-- Title -->
-              <h3 class="header-title h1">
-                1. Deposit
-              </h3>
-
-            </div>
-          </div>
-          <p>Connect your <a class="text-decoration-underline text-dark" href="https://ethereum.org/wallets/"
-              target="_blank">Ethereum wallet</a> to 88mph and deposit your <a
-              class="text-decoration-underline text-dark" href="https://makerdao.com/en/dai/" target="_blank">DAI</a>
-            into the pool. Your deposit is locked in 88mph's pool for a minimum
-            of 91 days. A longer lock period means a larger amount of upfront fixed-rate interest.</p>
-          <div class="header mt-md-5">
-            <div class="header-body">
-
-              <!-- Title -->
-              <h3 class="header-title h1">
-                2. Earn <strong class="interest-rate">{{oneYearInterestRate.toFormat(DECIMALS)}}%</strong> upfront
-                fixed-rate
-                interest
-              </h3>
-
-            </div>
-          </div>
-          <p>Here's the cool part: You get the interest upfront! It's like your interest is travelling back
-            from the future! While you get your fixed-rate APY instantly, your deposit will generate interests
-            during the lock period for the 88mph's pool at a variable APY on <a
-              class="text-decoration-underline text-dark" href="https://compound.finance/" target="_blank">Compound</a>
-            protocol, insuring the stability of 88mph's pool.</p>
-          <img class="img-fluid" src="https://media.giphy.com/media/xsF1FSDbjguis/giphy.gif" alt="Back to the future ">
-          <div class="header mt-md-5">
-            <div class="header-body">
-
-              <!-- Title -->
-              <h3 class="header-title h1">
-                3. Withdraw
-              </h3>
-
-            </div>
-          </div>
-          <p>When the lock period is over, withdraw your initial deposit. If you deposited 100.0000 DAI, yeah,
-            you get back 100.0000 DAI.</p>
-          <div class="header mt-md-5">
-            <div class="header-body">
-
-              <!-- Title -->
-              <h3 class="header-title h1">
-                88mph fee disclosure
-              </h3>
-
-            </div>
-          </div>
-          <p>
-            88mph charges a 10% fee on your upfront interest. The fee is already factored into the displayed APY
-            ({{oneYearInterestRate.toFormat(DECIMALS)}}%), so don't worry about doing more math 😉</p>
-          <div class="header mt-md-5">
-            <div class="header-body">
-
-              <!-- Title -->
-              <h3 class="header-title h1">
-                88mph risk disclosure
-              </h3>
-
-            </div>
-          </div>
-          <p>
-            If the interest rate offered by 88mph's underlying money market (e.g. Compound) drops too low,
-            and many users try to withdraw at the same time, then 88mph could be temporarily insolvent,
-            forcing users to wait a bit more to be able to withdraw their full deposit.
-          </p>
-          <p>
-            Even though this risk is
-            present, 88mph is planning to mitigate
-            it with sponsored deposits that help maintain the pool's solvency while offering
-            visibility to 88mph's sponsors.
-          </p>
-          <div class="header mt-md-5">
-            <div class="header-body">
-
-              <!-- Title -->
-              <h3 class="header-title h1">
-                Sponsored deposits
-              </h3>
-
-            </div>
-          </div>
-          <p>
-            Sponsored deposits let companies or organizations support 88mph's security in exchange for their visibility
-            on 88mph.
-            Sponsored deposits are like normal deposits, except that you don't get the upfront interest and get counted
-            separately in the statistics.
-          </p>
-          <p>
-            Sponsoring 88mph won't have a direct cost, since sponsors can withdraw a deposit after its deposit period is
-            over. However, sponsors will be shouldering risk for normal users, and may lose money if a black swan event
-            occurs.
-          </p>
-          <p>
-            We're going to release ASAP an UI for sponsored deposits. If you're interested
-            in sponsoring, contact us at
-            <a href="mailto:hello@baconlabs.dev" target="_top">hello@baconlabs.dev</a> or drop us a line on <a
-              href="https://twitter.com/88mphapp" target="_blank">Twitter</a>
-          </p>
-          <div class="header mt-md-5">
-            <div class="header-body">
-              <div class="row align-items-center">
-                <div class="col">
-
-                  <!-- Title -->
-                  <h3 class="header-title h1">
-                    Need more info?
-                  </h3>
-
-                </div>
-                <div class="col-auto">
-
-                  <a class="btn btn-outline-primary ml-auto" href="https://twitter.com/88mphapp" target="_blank">Drop us
-                    a line</a>
-
+        <div class="col-11 col-md-10">
+          <h2 class="display-3 text-center">
+            How does it work?
+          </h2>
+          <p class="text-center lead text-secondary mb-5">Lock your $DAI, and earn upfront fixed APY. It's like your
+            interest is travelling back from the future! Check our <a href="https://88mph.app/docs"
+              target="_blank">Documentation</a></p>
+          <img class="d-block mx-auto img-fluid mb-4" src="assets/img/illustrations/delorean.png" alt="" width="388">
+          <div class="row mb-5">
+            <div class="col-12 col-lg-4 mb-6 mb-lg-4">
+              <!-- Card -->
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <div class="avatar avatar-xl card-avatar card-avatar-top">
+                    <span
+                      class="border border-1 avatar-title bg-white rounded-circle font-weight-bold text-secondary">1</span>
+                  </div>
+                  <h2 class="card-title">
+                    Deposit
+                  </h2>
+                  <p class="card-text text-secondary">
+                    Connect your <a href="https://ethereum.org/wallets/" target="_blank">Ethereum wallet</a> to 88mph
+                    and deposit your <a href="https://makerdao.com/en/dai/" target="_blank">DAI</a> into the pool. Your
+                    deposit is locked in 88mph's pool for a minimum of 91 days.
+                  </p>
                 </div>
               </div>
-
-
+            </div>
+            <div class="col-12 col-lg-4 mb-6 mb-lg-4">
+              <!-- Card -->
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <div class="avatar avatar-xl card-avatar card-avatar-top">
+                    <span
+                      class="border border-1 avatar-title bg-white rounded-circle font-weight-bold text-secondary">2</span>
+                  </div>
+                  <h2 class="card-title">
+                    Earn {{oneYearInterestRate.toFormat(DECIMALS)}}%* upfront fixed-rate interest
+                  </h2>
+                  <p class="card-text text-secondary">
+                    It's like your interest is travelling back from the future! While you get your fixed APY instantly,
+                    your deposit will generate interests during the lock period for the 88mph's pool at a variable APY
+                    on <a href="https://compound.finance/" target="_blank">Compound</a> and <a href="https://aave.com/"
+                      target="_blank">Aave</a> protocol, insuring the stability of 88mph's pool.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="col-12 col-lg-4 mb-6 mb-lg-4">
+              <!-- Card -->
+              <div class="card h-100">
+                <div class="card-body text-center">
+                  <div class="avatar avatar-xl card-avatar card-avatar-top">
+                    <span
+                      class="border border-1 avatar-title bg-white rounded-circle font-weight-bold text-secondary">3</span>
+                  </div>
+                  <h2 class="card-title">
+                    Withdraw
+                  </h2>
+                  <p class="card-text text-secondary">
+                    Withdraw your initial deposit before maturity by paying a penalty* or when the lock period is over.
+                    If you deposited 100.00 DAI, yeah, you get back 100.00 DAI.
+                  </p>
+                  <small class="text-muted d-block mb-3">*Equal to your upfront interest + 10% fee applied on your
+                    upfront interest</small>
+                </div>
+              </div>
             </div>
           </div>
-
-          <!-- Stats -->
-          <div class="header mt-md-5" id="stats">
-            <div class="header-body">
-
-              <!-- Title -->
-              <h3 class="header-title h1">
-                Stats
-              </h3>
-
-            </div>
-          </div>
-          <div class="row">
+          <img class="d-block mx-auto img-fluid" src="assets/img/illustrations/rageface.png" alt="" width="128">
+          <p class="text-center lead animated-under-text">It’s weird at first, we know.</p>
+        </div>
+      </div>
+      <div class="row justify-content-center mb-5">
+        <div class="col-11 col-md-10">
+          <h3 class="h1 text-center mb-5">But it's real. Check our stats</h3>
+          <div class="row mb-6">
             <div class="col-12 col-lg-6">
               <div class="card">
                 <div class="card-body">
@@ -613,6 +664,43 @@
               </div>
             </div>
           </div>
+          <div class="row">
+            <div class="col-12 col-lg-6 mb-6 mb-lg-0">
+              <h3 class="h1">88mph risk disclosure</h3>
+              <p>If the interest rate offered by 88mph's underlying money market (e.g. Compound) drops too low, and many
+                users try to withdraw at the same time, then 88mph could be temporarily insolvent, forcing users to wait
+                a bit more to be able to withdraw their full deposit.</p>
+              <p>Even though this risk is present, 88mph is planning to mitigate it with sponsored deposits that help
+                maintain the pool's solvency while offering visibility to 88mph's sponsors. </p>
+
+              <!-- Title -->
+              <h4>
+                Need more info?
+              </h4>
+              <a class="btn btn-outline-primary ml-auto" href="https://twitter.com/88mphapp" target="_blank">Drop us a
+                line</a>
+
+
+            </div>
+            <div class="col-12 col-lg-6">
+              <h3 class="h1">Sponsored deposits</h3>
+              <p>Sponsored deposits let companies or organizations support 88mph's security in exchange for their
+                visibility on 88mph. Sponsored deposits are like normal deposits, except that you don't get the upfront
+                interest and get counted separately in the statistics.</p>
+              <p>Sponsoring 88mph won't have a direct cost, since sponsors can withdraw a deposit after its deposit
+                period is over. However, sponsors will be shouldering risk for normal users, and may lose money if a
+                black swan event occurs.</p>
+              <p>We're going to release ASAP an UI for sponsored deposits. If you're interested in sponsoring, contact
+                us at <a _ngcontent-chm-c24="" href="mailto:hello@baconlabs.dev" target="_top">hello@baconlabs.dev</a>
+                or drop us a line on <a _ngcontent-chm-c24="" href="https://twitter.com/88mphapp"
+                  target="_blank">Twitter</a></p>
+
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-12 px-5 col-lg-6">
           <div class="text-center mb-4">
             <!-- Preheading -->
             <h6 class="text-uppercase text-muted text-center my-4">
@@ -632,6 +720,7 @@
                   me</button>
               </div>
             </form>
+
           </div>
           <div class="text-center mb-4">
             <a class="mr-4" href="https://twitter.com/88mphapp" target="_blank">
@@ -642,8 +731,8 @@
             </a>
           </div>
           <div class="text-center text-secondary mb-5">
-            Made by <a class="white-link-underlined" href="https://baconlabs.dev" target="_blank">🥓 Bacon
-              Labs</a> • hello@baconlabs.dev
+            Made by <a class="white-link-underlined" href="https://baconlabs.dev" target="_blank">🥓 Bacon Labs</a> •
+            hello@baconlabs.dev
           </div>
         </div>
       </div>
